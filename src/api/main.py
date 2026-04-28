@@ -1,8 +1,8 @@
 """
 Main — Point d'entrée de l'application FastAPI.
-Assemble les routeurs, configure les middlewares de sécurité (CORS),
+Assemble les routeurs, configure les middlewares de sécurité (CORS, Payload Guard, Rate Limit),
 et gère le cycle de vie de l'application (lifespan) pour charger/décharger les modèles.
-Équivalent de la classe @SpringBootApplication.
+Équivalent de la classe @SpringBootApplication + SecurityFilterChain.
 """
 
 import logging
@@ -13,8 +13,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+from slowapi.errors import RateLimitExceeded
 
 from src.api.core.model_manager import model_manager
+from src.api.core.security import PayloadGuardMiddleware, limiter, rate_limit_exceeded_handler
 from src.api.controllers.prediction_controller import router as prediction_router
 
 # Charger les variables d'environnement depuis le .env à la racine du projet
@@ -62,13 +64,27 @@ app = FastAPI(
     title="SmartRecovery ML API",
     description=(
         "API REST pour la prédiction de recouvrement de créances. "
-        "Expose des modèles PySpark ML (RandomForest) via des endpoints sécurisés."
+        "Expose des modèles PySpark ML (RandomForest) via des endpoints sécurisés. "
+        "Protégée par Rate Limiting, Payload Guard et API Key Authentication."
     ),
     version="1.0.0",
     lifespan=lifespan,
 )
 
-# -- Middleware CORS --
+# ===========================================================================
+# COUCHE 1 : Middleware Anti-JSON Bomb (intercepte AVANT tout traitement)
+# ===========================================================================
+app.add_middleware(PayloadGuardMiddleware)
+
+# ===========================================================================
+# COUCHE 2 : Rate Limiter (slowapi)
+# ===========================================================================
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
+
+# ===========================================================================
+# Middleware CORS
+# ===========================================================================
 ALLOWED_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
 app.add_middleware(
     CORSMiddleware,
@@ -82,7 +98,7 @@ app.add_middleware(
 app.include_router(prediction_router)
 
 
-# -- Root endpoint (optionnel) --
+# -- Root endpoint (optionnel, pas protégé) --
 @app.get("/", tags=["Root"])
 async def root():
     return {
