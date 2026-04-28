@@ -14,7 +14,7 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(module)s - %(message)s',
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler("generation_dataset.log", encoding="utf-8")
+        logging.FileHandler("../../logs/generation_dataset.log", encoding="utf-8")
     ]
 )
 logger = logging.getLogger(__name__)
@@ -165,8 +165,8 @@ class SyntheticDebtCollectionGenerator:
         logger.info(f"Préparation de la sauvegarde sécurisée dans {output_dir}/{filename}...")
         try:
             # Sécurité 1 : Gestion sécurisée du répertoire (création sans erreur si existant)
-            # Utilisation du dossier spécifié dans le chemin absolu /home/mohamed-hmidouch/smart-recovery-ml/data
-            base_path = Path(__file__).parent
+            # Utilisation du chemin absolu racine du projet
+            base_path = Path(__file__).resolve().parent.parent.parent
             path_dir = base_path / output_dir
             path_dir.mkdir(parents=True, exist_ok=True)
             
