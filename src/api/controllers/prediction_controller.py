@@ -1,15 +1,17 @@
 """
 Controller Layer — Routeur FastAPI (contrôleur 'stupide').
 Gère uniquement le flux HTTP : réception, délégation au Service, gestion des erreurs.
-Équivalent d'un @RestController dans Spring Boot.
+Protégé par Rate Limiting (slowapi) et API Key Authentication (Depends).
+Équivalent d'un @RestController + @PreAuthorize dans Spring Boot.
 """
 
 import logging
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Depends, Request, status
 
 from src.api.schemas.dossier import DossierRequest, PredictionResponse, HealthResponse
 from src.api.services.prediction_service import PredictionService
 from src.api.core.model_manager import model_manager
+from src.api.core.security import limiter, verify_api_key
 
 logger = logging.getLogger(__name__)
 
@@ -22,14 +24,20 @@ router = APIRouter(prefix="/api/v1", tags=["Recouvrement"])
     status_code=status.HTTP_200_OK,
     summary="Prédiction de recouvrement",
     description="Reçoit un dossier de recouvrement et retourne la prédiction du statut final, "
-                "la probabilité de recouvrement, le délai estimé et le score avocat.",
+                "la probabilité de recouvrement, le délai estimé et le score avocat. "
+                "Requiert un header X-API-Key valide. Limité à 5 requêtes/minute/IP.",
+    dependencies=[Depends(verify_api_key)],
 )
-async def predict_recouvrement(dossier: DossierRequest):
+@limiter.limit("5/minute")
+async def predict_recouvrement(request: Request, dossier: DossierRequest):
     """
     Endpoint principal de prédiction.
-    La validation des entrées est assurée par le schéma Pydantic (DossierRequest).
-    Les erreurs internes sont capturées et renvoyées sous forme de réponse HTTP 500 générique
-    pour ne pas fuiter de stack trace au client (Security Best Practice).
+    Sécurité appliquée :
+      - Couche 1 : Payload Guard Middleware (anti-JSON bomb, < 1 MB)
+      - Couche 2 : Rate Limiting slowapi (5 req/min/IP)
+      - Couche 3 : API Key Authentication (header X-API-Key)
+      - Couche 4 : Validation Pydantic (DossierRequest)
+      - Couche 5 : Try/Except (pas de stack trace exposée)
     """
     try:
         if not model_manager.is_loaded:
@@ -57,10 +65,11 @@ async def predict_recouvrement(dossier: DossierRequest):
     "/health",
     response_model=HealthResponse,
     summary="Health Check",
-    description="Vérifie que l'API est opérationnelle et que les modèles sont chargés.",
+    description="Vérifie que l'API est opérationnelle et que les modèles sont chargés. "
+                "Pas d'authentification requise (utilisé par les orchestrateurs K8s/Docker).",
 )
 async def health_check():
-    """Endpoint de santé — utile pour les orchestrateurs (Docker, K8s)."""
+    """Endpoint de santé — pas protégé par API Key (intentionnel pour les probes K8s)."""
     return HealthResponse(
         status="healthy" if model_manager.is_loaded else "degraded",
         models_loaded=model_manager.is_loaded,
