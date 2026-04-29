@@ -11,8 +11,8 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
-API_HOST = os.getenv("API_HOST", "127.0.0.1")
-API_PORT = os.getenv("API_PORT", "8000")
+API_HOST = os.getenv("API_HOST")
+API_PORT = os.getenv("API_PORT")
 VALID_KEY = os.getenv("SECRET_API_KEY")
 
 if not VALID_KEY:
