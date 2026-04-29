@@ -12,3 +12,6 @@ models/
 # Environment
 .env
 .venv/
+
+# AI Instructions
+.AI_INSTRUCTIONS.md

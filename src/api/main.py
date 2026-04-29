@@ -17,6 +17,7 @@ from slowapi.errors import RateLimitExceeded
 
 from src.api.core.model_manager import model_manager
 from src.api.core.security import PayloadGuardMiddleware, limiter, rate_limit_exceeded_handler
+from src.api.core.exceptions import register_exception_handlers
 from src.api.controllers.prediction_controller import router as prediction_router
 
 # Charger les variables d'environnement depuis le .env à la racine du projet
@@ -70,6 +71,11 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+# ===========================================================================
+# GESTIONNAIRES D'ERREURS (Global Exception Handling)
+# ===========================================================================
+register_exception_handlers(app)
 
 # ===========================================================================
 # COUCHE 1 : Middleware Anti-JSON Bomb (intercepte AVANT tout traitement)
