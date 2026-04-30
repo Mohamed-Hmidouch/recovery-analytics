@@ -42,7 +42,12 @@ class PayloadGuardMiddleware(BaseHTTPMiddleware):
             )
             return JSONResponse(
                 status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                content={"detail": f"Payload trop volumineux. Taille maximale autorisée : {MAX_PAYLOAD_BYTES} bytes."},
+                content={
+                    "success": False,
+                    "error_code": "PAYLOAD_TOO_LARGE",
+                    "message": "Les données envoyées sont trop volumineuses. Pour des raisons de performance, la limite est fixée à 1 Mo.",
+                    "details": []
+                },
             )
         return await call_next(request)
 
@@ -58,7 +63,12 @@ def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
     logger.warning(f"SECURITY — Rate limit dépassé pour {request.client.host} sur {request.url.path}")
     return JSONResponse(
         status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-        content={"detail": "Trop de requêtes. Réessayez dans quelques instants."},
+        content={
+            "success": False,
+            "error_code": "RATE_LIMIT_EXCEEDED",
+            "message": "Vous avez envoyé trop de requêtes en peu de temps. Veuillez patienter une minute avant de réessayer.",
+            "details": []
+        },
     )
 
 
@@ -86,7 +96,7 @@ async def verify_api_key(api_key: str = Security(API_KEY_HEADER)):
     if not api_key:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Header X-API-Key manquant.",
+            detail="Accès refusé : la clé d'authentification est manquante. Veuillez fournir le header 'X-API-Key'.",
             headers={"WWW-Authenticate": "ApiKey"},
         )
 
@@ -94,7 +104,7 @@ async def verify_api_key(api_key: str = Security(API_KEY_HEADER)):
         logger.warning(f"SECURITY — Tentative d'accès avec une API Key invalide.")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="API Key invalide.",
+            detail="Accès refusé : la clé d'API fournie est incorrecte ou a expiré.",
         )
 
     return api_key

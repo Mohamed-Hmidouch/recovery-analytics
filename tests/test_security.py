@@ -26,12 +26,22 @@ ENDPOINT = f"{BASE}/api/v1/predict/recouvrement"
 HEALTH = f"{BASE}/api/v1/health"
 
 VALID_PAYLOAD = {
+    "dossier_id": "DOS-000001",
+    "procedure_id": "PROC-987654",
     "client_segment": "Retail",
     "revenu_estime": 45000.0,
     "score_risque": 62,
+    "historique_incidents": 2,
     "montant_impaye": 8500.50,
+    "anciennete_impaye_jours": 120,
+    "nombre_echeances_impayees": 4,
     "type_procedure": "Amiable",
-    "acteur_taux_succes": 0.72,
+    "tribunal_id": "NONE",
+    "avocat_id": "NONE",
+    "huissier_id": "HUI-015",
+    "nombre_evenements": 3,
+    "nombre_retards": 1,
+    "derniere_action_age_jours": 12,
     "date_ouverture": "2024-03-15",
     "date_mise_a_jour": "2024-09-20"
 }

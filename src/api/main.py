@@ -39,19 +39,27 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+from src.api.db.database import engine, Base
+
 # -- Lifespan : gestion du cycle de vie (Startup / Shutdown) --
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
-    Charge les modèles ML au démarrage et libère les ressources à l'arrêt.
-    C'est l'équivalent du @PostConstruct / @PreDestroy de Spring.
+    Charge les modèles ML au démarrage, initialise la base de données
+    et libère les ressources à l'arrêt.
     """
     logger.info("=== DÉMARRAGE DE L'API SmartRecovery ===")
     try:
+        # Initialisation de la BDD
+        logger.info("Création des tables PostgreSQL si elles n'existent pas...")
+        Base.metadata.create_all(bind=engine)
+        logger.info("Base de données initialisée avec succès.")
+
+        # Initialisation des modèles ML
         model_manager.startup()
         logger.info("Tous les modèles sont chargés. L'API est prête à recevoir des requêtes.")
     except Exception as e:
-        logger.critical(f"Échec du chargement des modèles : {e}", exc_info=True)
+        logger.critical(f"Échec critique au démarrage (BDD ou Modèles) : {e}", exc_info=True)
         # On laisse l'API démarrer en mode dégradé pour que le /health retourne 'degraded'
 
     yield  # L'application tourne ici
