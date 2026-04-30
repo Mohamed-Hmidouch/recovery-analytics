@@ -6,12 +6,17 @@ Protégé par Rate Limiting (slowapi) et API Key Authentication (Depends).
 """
 
 import logging
+from typing import List
 from fastapi import APIRouter, HTTPException, Depends, Request, status
 
-from src.api.schemas.dossier import DossierRequest, PredictionResponse, HealthResponse
+from src.api.schemas.dossier import DossierRequest, PredictionResponse, HealthResponse, HistoryRecordResponse
 from src.api.services.prediction_service import PredictionService
 from src.api.core.model_manager import model_manager
 from src.api.core.security import limiter, verify_api_key
+from src.api.db.models import PredictionHistory
+
+from sqlalchemy.orm import Session
+from src.api.db.database import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -24,12 +29,12 @@ router = APIRouter(prefix="/api/v1", tags=["Recouvrement"])
     status_code=status.HTTP_200_OK,
     summary="Prédiction de recouvrement",
     description="Reçoit un dossier de recouvrement et retourne la prédiction du statut final, "
-                "la probabilité de recouvrement, le délai estimé et le score avocat. "
+                "la probabilité de recouvrement, le délai estimé, le score avocat, et le segment (KMeans). "
                 "Requiert un header X-API-Key valide. Limité à 5 requêtes/minute/IP.",
     dependencies=[Depends(verify_api_key)],
 )
 @limiter.limit("5/minute")
-async def predict_recouvrement(request: Request, dossier: DossierRequest):
+async def predict_recouvrement(request: Request, dossier: DossierRequest, db: Session = Depends(get_db)):
     """
     Endpoint principal de prédiction.
     Sécurité appliquée :
@@ -45,7 +50,7 @@ async def predict_recouvrement(request: Request, dossier: DossierRequest):
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Les modèles ML ne sont pas encore chargés. Réessayez dans quelques secondes.",
             )
-        result = PredictionService.predict(dossier)
+        result = PredictionService.predict(dossier, db)
         return result
 
     except HTTPException:
@@ -59,6 +64,22 @@ async def predict_recouvrement(request: Request, dossier: DossierRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Une erreur interne est survenue lors du traitement de la prédiction.",
         )
+
+
+@router.get(
+    "/history",
+    response_model=List[HistoryRecordResponse],
+    summary="Historique des prédictions",
+    description="Renvoie les 50 dernières prédictions historisées dans PostgreSQL.",
+    dependencies=[Depends(verify_api_key)],
+)
+async def get_prediction_history(db: Session = Depends(get_db), limit: int = 50):
+    """
+    Récupère l'historique récent des prédictions.
+    Protégé par API Key.
+    """
+    history = db.query(PredictionHistory).order_by(PredictionHistory.created_at.desc()).limit(limit).all()
+    return history
 
 
 @router.get(
