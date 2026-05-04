@@ -22,19 +22,11 @@ class DossierRequest(BaseModel):
     # Client
     client_segment: Literal["Retail", "Professionnel", "Corporate"] = Field(...)
     revenu_estime: float = Field(..., gt=0)
-    score_risque: int = Field(..., ge=1, le=100)
     historique_incidents: int = Field(..., ge=0)
-
     # Dette
     montant_impaye: float = Field(..., gt=0)
     anciennete_impaye_jours: int = Field(..., ge=0)
     nombre_echeances_impayees: int = Field(..., ge=0)
-
-    # Procédure (Les acteurs sont gérés automatiquement si la procédure prédite est judiciaire)
-    huissier_id: str = Field(...)
-    nombre_evenements: int = Field(..., ge=0)
-    nombre_retards: int = Field(..., ge=0)
-    derniere_action_age_jours: int = Field(..., ge=0)
 
     # Dates
     date_ouverture: date = Field(...)
@@ -53,12 +45,12 @@ class PredictionResponse(BaseModel):
     Réponse complète renvoyée au client avec les résultats des 4 modèles ML
     + le scoring avocat/huissier calculé depuis la base de données.
     """
-    # Résultats des 5 modèles ML
-    procedure_recommandee: str = Field(..., description="Procédure recommandée par l'IA (Amiable / Judiciaire)")
+    # Résultats des 5 modèles ML traduits en langage "Manager"
+    meilleure_procedure: str = Field(..., description="Procédure recommandée par l'IA (Amiable / Judiciaire)")
+    taux_de_succes: float = Field(..., description="Probabilité de recouvrement (0.0 - 1.0) équivalent au taux de succès")
     statut_final_predit: str = Field(..., description="Statut prédit (Recouvré / En cours / Échec)")
-    probabilite_recouvrement: float = Field(..., description="Probabilité de recouvrement (0.0 - 1.0)")
     delai_estime_jours: float = Field(..., description="Durée estimée de la procédure en jours")
-    next_best_action: str = Field(..., description="Action recommandée par l'IA")
+    prochaine_action_recommandee: str = Field(..., description="Action recommandée par l'IA")
     cluster_segment_id: int = Field(..., description="Segment du dossier (clustering KMeans)")
 
     # Scoring calculé depuis PostgreSQL
