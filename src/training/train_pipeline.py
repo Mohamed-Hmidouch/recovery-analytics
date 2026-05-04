@@ -1,10 +1,11 @@
 """
-Pipeline d'entraînement Spark ML — 4 Modèles distincts.
+Pipeline d'entraînement Spark ML — 5 Modèles distincts.
 
-  Modèle 1 : RandomForestClassifier  → Probabilité de recouvrement (statut_final)
-  Modèle 2 : RandomForestRegressor   → Prédiction durée procédure (delai_final_jours)
-  Modèle 3 : RandomForestClassifier  → Next Best Action (next_best_action)
-  Modèle 4 : KMeans                  → Segmentation dossiers (clustering)
+  Modèle 1 : RandomForestClassifier  → Prédiction type procédure (Amiable/Judiciaire) - NOUVEAU
+  Modèle 2 : RandomForestClassifier  → Probabilité de recouvrement (statut_final)
+  Modèle 3 : RandomForestRegressor   → Prédiction durée procédure (delai_final_jours)
+  Modèle 4 : RandomForestClassifier  → Next Best Action (next_best_action)
+  Modèle 5 : KMeans                  → Segmentation dossiers (clustering)
 """
 
 import os
@@ -40,9 +41,16 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# -- Features partagées entre tous les modèles --
-CATEGORICAL_COLS = ["client_segment", "type_procedure"]
-NUMERIC_COLS = [
+# -- Features de Base (Avant décision de la procédure) --
+BASE_CATEGORICAL_COLS = ["client_segment"]
+BASE_NUMERIC_COLS = [
+    "revenu_estime", "score_risque", "montant_impaye", 
+    "historique_incidents", "anciennete_impaye_jours", "nombre_echeances_impayees"
+]
+
+# -- Features Complètes (Inclus le type de procédure prédit et l'historique) --
+FULL_CATEGORICAL_COLS = ["client_segment", "type_procedure"]
+FULL_NUMERIC_COLS = [
     "revenu_estime", "score_risque", "montant_impaye", "acteur_taux_succes",
     "score_avocat", "historique_incidents", "anciennete_impaye_jours",
     "nombre_echeances_impayees", "nombre_evenements", "nombre_retards",
@@ -78,106 +86,126 @@ def feature_engineering(df):
     return df
 
 
-def _build_preprocessing_stages():
-    """Construit les étapes de preprocessing partagées."""
+def _build_preprocessing_stages(categorical_cols, numeric_cols, suffix):
+    """Construit les étapes de preprocessing dynamiques."""
     indexers = [
-        StringIndexer(inputCol=c, outputCol=c + "_index", handleInvalid="keep")
-        for c in CATEGORICAL_COLS
+        StringIndexer(inputCol=c, outputCol=c + f"_index_{suffix}", handleInvalid="keep")
+        for c in categorical_cols
     ]
     encoders = [
         OneHotEncoder(
-            inputCols=[c + "_index" for c in CATEGORICAL_COLS],
-            outputCols=[c + "_ohe" for c in CATEGORICAL_COLS],
+            inputCols=[c + f"_index_{suffix}" for c in categorical_cols],
+            outputCols=[c + f"_ohe_{suffix}" for c in categorical_cols],
         )
     ]
     assembler = VectorAssembler(
-        inputCols=[c + "_ohe" for c in CATEGORICAL_COLS] + NUMERIC_COLS,
-        outputCol="features_unscaled",
+        inputCols=[c + f"_ohe_{suffix}" for c in categorical_cols] + numeric_cols,
+        outputCol=f"features_unscaled_{suffix}",
     )
     scaler = StandardScaler(
-        inputCol="features_unscaled", outputCol="features", withStd=True, withMean=True
+        inputCol=f"features_unscaled_{suffix}", outputCol=f"features_{suffix}", withStd=True, withMean=True
     )
     return indexers + encoders + [assembler, scaler]
 
 
 def build_all_pipelines():
-    """Construit les 4 pipelines ML."""
-    preprocessing = _build_preprocessing_stages()
+    """Construit les 5 pipelines ML."""
+    # 1. Preprocessing Base (pour la procédure)
+    prep_base = _build_preprocessing_stages(BASE_CATEGORICAL_COLS, BASE_NUMERIC_COLS, "base")
+    
+    # 2. Preprocessing Full (pour le reste)
+    prep_full = _build_preprocessing_stages(FULL_CATEGORICAL_COLS, FULL_NUMERIC_COLS, "full")
 
     # Label indexers
+    label_proc = StringIndexer(inputCol="type_procedure", outputCol="label_proc", handleInvalid="keep")
     label_statut = StringIndexer(inputCol="statut_final", outputCol="label_statut", handleInvalid="keep")
     label_action = StringIndexer(inputCol="next_best_action", outputCol="label_action", handleInvalid="keep")
 
-    # Modèle 1 : Classification — Probabilité de recouvrement
+    # Modèle 1 : Classification — Type Procédure (Automatisation totale)
+    clf_proc = RandomForestClassifier(
+        labelCol="label_proc", featuresCol="features_base", numTrees=50, maxDepth=5, seed=42
+    )
+    pipeline_proc = Pipeline(stages=prep_base + [label_proc, clf_proc])
+
+    # Modèle 2 : Classification — Probabilité de recouvrement
     clf_statut = RandomForestClassifier(
-        labelCol="label_statut", featuresCol="features", numTrees=50, maxDepth=5, seed=42
+        labelCol="label_statut", featuresCol="features_full", numTrees=50, maxDepth=5, seed=42
     )
-    pipeline_statut = Pipeline(stages=preprocessing + [label_statut, clf_statut])
+    pipeline_statut = Pipeline(stages=prep_full + [label_statut, clf_statut])
 
-    # Modèle 2 : Régression — Prédiction durée procédure
+    # Modèle 3 : Régression — Prédiction durée procédure
     reg_delai = RandomForestRegressor(
-        labelCol="delai_final_jours", featuresCol="features", numTrees=50, maxDepth=5, seed=42
+        labelCol="delai_final_jours", featuresCol="features_full", numTrees=50, maxDepth=5, seed=42
     )
-    pipeline_delai = Pipeline(stages=preprocessing + [label_statut, reg_delai])
+    pipeline_delai = Pipeline(stages=prep_full + [label_statut, reg_delai])
 
-    # Modèle 3 : Classification — Next Best Action
+    # Modèle 4 : Classification — Next Best Action
     clf_action = RandomForestClassifier(
-        labelCol="label_action", featuresCol="features", numTrees=50, maxDepth=5, seed=42
+        labelCol="label_action", featuresCol="features_full", numTrees=50, maxDepth=5, seed=42
     )
-    pipeline_action = Pipeline(stages=preprocessing + [label_statut, label_action, clf_action])
+    pipeline_action = Pipeline(stages=prep_full + [label_statut, label_action, clf_action])
 
-    # Modèle 4 : Clustering — Segmentation
-    kmeans = KMeans().setK(4).setSeed(42).setFeaturesCol("features").setPredictionCol("cluster_id")
-    pipeline_cluster = Pipeline(stages=preprocessing + [label_statut, kmeans])
+    # Modèle 5 : Clustering — Segmentation
+    kmeans = KMeans().setK(4).setSeed(42).setFeaturesCol("features_full").setPredictionCol("cluster_id")
+    pipeline_cluster = Pipeline(stages=prep_full + [label_statut, kmeans])
 
-    return pipeline_statut, pipeline_delai, pipeline_action, pipeline_cluster
+    return pipeline_proc, pipeline_statut, pipeline_delai, pipeline_action, pipeline_cluster
 
 
-def train_and_evaluate(df, p_statut, p_delai, p_action, p_cluster):
-    """Entraîne et évalue les 4 modèles."""
+def train_and_evaluate(df, p_proc, p_statut, p_delai, p_action, p_cluster):
+    """Entraîne et évalue les 5 modèles."""
     train_data, test_data = df.randomSplit([0.8, 0.2], seed=42)
 
-    # 1. Classification — Statut Final
-    logger.info("══ Modèle 1/4 : Classification (Probabilité de recouvrement) ══")
+    # 1. Classification — Type Procédure
+    logger.info("══ Modèle 1/5 : Classification (Type Procédure) ══")
+    m_proc = p_proc.fit(train_data)
+    acc_proc = MulticlassClassificationEvaluator(
+        labelCol="label_proc", predictionCol="prediction", metricName="accuracy"
+    ).evaluate(m_proc.transform(test_data))
+    logger.info(f"   → Accuracy : {acc_proc:.4f}")
+
+    # 2. Classification — Statut Final
+    logger.info("══ Modèle 2/5 : Classification (Probabilité de recouvrement) ══")
     m_statut = p_statut.fit(train_data)
     acc = MulticlassClassificationEvaluator(
         labelCol="label_statut", predictionCol="prediction", metricName="accuracy"
     ).evaluate(m_statut.transform(test_data))
     logger.info(f"   → Accuracy : {acc:.4f}")
 
-    # 2. Régression — Délai
-    logger.info("══ Modèle 2/4 : Régression (Prédiction durée procédure) ══")
+    # 3. Régression — Délai
+    logger.info("══ Modèle 3/5 : Régression (Prédiction durée procédure) ══")
     m_delai = p_delai.fit(train_data)
     rmse = RegressionEvaluator(
         labelCol="delai_final_jours", predictionCol="prediction", metricName="rmse"
     ).evaluate(m_delai.transform(test_data))
     logger.info(f"   → RMSE : {rmse:.4f} jours")
 
-    # 3. Classification — Next Best Action
-    logger.info("══ Modèle 3/4 : Classification (Next Best Action) ══")
+    # 4. Classification — Next Best Action
+    logger.info("══ Modèle 4/5 : Classification (Next Best Action) ══")
     m_action = p_action.fit(train_data)
     acc_action = MulticlassClassificationEvaluator(
         labelCol="label_action", predictionCol="prediction", metricName="accuracy"
     ).evaluate(m_action.transform(test_data))
     logger.info(f"   → Accuracy : {acc_action:.4f}")
 
-    # 4. Clustering — KMeans (non-supervisé, tout le dataset)
-    logger.info("══ Modèle 4/4 : Clustering (Segmentation KMeans) ══")
+    # 5. Clustering — KMeans
+    logger.info("══ Modèle 5/5 : Clustering (Segmentation KMeans) ══")
     m_cluster = p_cluster.fit(df)
     silhouette = ClusteringEvaluator(
-        featuresCol="features", predictionCol="cluster_id"
+        featuresCol="features_full", predictionCol="cluster_id"
     ).evaluate(m_cluster.transform(df))
     logger.info(f"   → Silhouette : {silhouette:.4f}")
 
-    return m_statut, m_delai, m_action, m_cluster
+    return m_proc, m_statut, m_delai, m_action, m_cluster
 
 
-def save_models(m_statut, m_delai, m_action, m_cluster):
-    """Sauvegarde les 4 modèles avec horodatage."""
+def save_models(m_proc, m_statut, m_delai, m_action, m_cluster):
+    """Sauvegarde les 5 modèles avec horodatage."""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     models_dir = BASE_DIR / "models"
 
     paths = {
+        "rf_procedure": m_proc,
         "rf_classifier": m_statut,
         "rf_regressor": m_delai,
         "rf_next_action": m_action,
@@ -194,12 +222,12 @@ def main():
     try:
         df = load_data(spark)
         df = feature_engineering(df)
-        p_statut, p_delai, p_action, p_cluster = build_all_pipelines()
-        m_statut, m_delai, m_action, m_cluster = train_and_evaluate(
-            df, p_statut, p_delai, p_action, p_cluster
+        p_proc, p_statut, p_delai, p_action, p_cluster = build_all_pipelines()
+        m_proc, m_statut, m_delai, m_action, m_cluster = train_and_evaluate(
+            df, p_proc, p_statut, p_delai, p_action, p_cluster
         )
-        save_models(m_statut, m_delai, m_action, m_cluster)
-        logger.info("════ Entraînement terminé. 4 modèles sauvegardés avec succès. ════")
+        save_models(m_proc, m_statut, m_delai, m_action, m_cluster)
+        logger.info("════ Entraînement terminé. 5 modèles sauvegardés avec succès. ════")
     finally:
         spark.stop()
 
