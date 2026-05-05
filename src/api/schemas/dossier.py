@@ -42,20 +42,25 @@ class DossierRequest(BaseModel):
 
 class PredictionResponse(BaseModel):
     """
-    Réponse complète renvoyée au client avec les résultats des 4 modèles ML
+    Réponse complète renvoyée au client avec les résultats des 5 modèles ML
     + le scoring avocat/huissier calculé depuis la base de données.
     """
-    # Résultats des 5 modèles ML traduits en langage "Manager"
+    # Identifiants des acteurs assignés automatiquement
+    avocat_id: str = Field(..., description="ID de l'avocat assigné (auto ou manuel)")
+    huissier_id: str = Field(..., description="ID de l'huissier assigné (auto)")
+    tribunal_id: str = Field(..., description="ID du tribunal concerné (auto ou NONE si amiable)")
+
+    # Résultats des 5 modèles ML traduits en langage \"Manager\"
     meilleure_procedure: str = Field(..., description="Procédure recommandée par l'IA (Amiable / Judiciaire)")
     taux_de_succes: float = Field(..., description="Probabilité de recouvrement (0.0 - 1.0) équivalent au taux de succès")
     statut_final_predit: str = Field(..., description="Statut prédit (Recouvré / En cours / Échec)")
     delai_estime_jours: float = Field(..., description="Durée estimée de la procédure en jours")
-    prochaine_action_recommandee: str = Field(..., description="Action recommandée par l'IA")
+    prochaine_action_recommandee: str = Field(..., description="Next Best Action recommandée par l'IA")
     cluster_segment_id: int = Field(..., description="Segment du dossier (clustering KMeans)")
 
     # Scoring calculé depuis PostgreSQL
-    score_avocat: float = Field(..., description="Score de performance de l'avocat")
-    score_huissier: float = Field(..., description="Score de performance de l'huissier")
+    score_avocat: float = Field(..., description="Score de performance de l'avocat (0-100)")
+    score_huissier: float = Field(..., description="Score de performance de l'huissier (0-100)")
 
     # Métriques calculées automatiquement (pour transparence)
     acteur_taux_succes: float = Field(..., description="Taux de succès historique de l'avocat (calculé)")

@@ -104,10 +104,10 @@ class PredictionService:
             tribunal_id = "TRIB-AUTO"
             avocat_id = "AVO-AUTO"
 
-        # -- 2. Scoring depuis PostgreSQL --
-        acteur_metrics = ScoringService.compute_acteur_metrics(db, avocat_id)
-        tribunal_metrics = ScoringService.compute_tribunal_metrics(db, tribunal_id)
-        procedure_metrics = ScoringService.compute_procedure_metrics(db, type_procedure_predite)
+        # -- 2. Scoring depuis PostgreSQL (agrégé par client_segment) --
+        acteur_metrics = ScoringService.compute_segment_metrics(db, request.client_segment)
+        tribunal_metrics = ScoringService.compute_tribunal_metrics(db, request.client_segment, type_procedure_predite)
+        procedure_metrics = ScoringService.compute_procedure_metrics(db, request.client_segment, type_procedure_predite)
 
         acteur_taux_succes = acteur_metrics["acteur_taux_succes"]
         acteur_delai_moyen = acteur_metrics["acteur_delai_moyen"]
@@ -115,7 +115,7 @@ class PredictionService:
         procedure_taux_succes = procedure_metrics["procedure_taux_succes"]
 
         score_avocat = ScoringService.compute_score_avocat(acteur_taux_succes, acteur_delai_moyen)
-        score_huissier = ScoringService.compute_score_huissier(db, huissier_id)
+        score_huissier = ScoringService.compute_score_huissier(db, request.client_segment)
 
         # -- 3. Construction du DataFrame complet --
         row_full = Row(
@@ -198,6 +198,9 @@ class PredictionService:
 
         # -- 6. Réponse --
         return PredictionResponse(
+            avocat_id=avocat_id,
+            huissier_id=huissier_id,
+            tribunal_id=tribunal_id,
             meilleure_procedure=type_procedure_predite,
             taux_de_succes=round(prob_recouvrement, 4),
             statut_final_predit=statut_label,
