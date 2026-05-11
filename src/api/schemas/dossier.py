@@ -28,6 +28,15 @@ class DossierRequest(BaseModel):
     anciennete_impaye_jours: int = Field(..., ge=0)
     nombre_echeances_impayees: int = Field(..., ge=0)
 
+    # Socio-économique (V2)
+    domiciliation_salaire: bool = Field(default=False, description="Salaire domicilié dans l'établissement")
+    anciennete_client_annees: int = Field(default=0, ge=0, description="Ancienneté client en années")
+    statut_matrimonial: Literal["Celibataire", "Marie", "Divorce", "Veuf"] = Field(default="Celibataire")
+    personnes_a_charge: int = Field(default=0, ge=0, description="Nombre de personnes à charge")
+    categorie_employeur: Literal["Etat", "Prive", "Independant", "Sans_emploi"] = Field(default="Prive")
+    type_contrat: Literal["CDI", "CDD", "Interim", "Fonctionnaire", "Sans_contrat"] = Field(default="CDI")
+    statut_logement: Literal["Proprietaire", "Locataire", "Loge_gratuitement"] = Field(default="Locataire")
+
     # Dates
     date_ouverture: date = Field(...)
     date_mise_a_jour: date = Field(...)

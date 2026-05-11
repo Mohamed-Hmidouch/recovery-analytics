@@ -9,7 +9,7 @@ import uuid
 from pyspark.sql import Row
 from pyspark.sql.functions import col, datediff, expr, lit
 from pyspark.sql.types import (
-    StructType, StructField, StringType, FloatType, IntegerType, DateType,
+    StructType, StructField, StringType, FloatType, IntegerType, DateType, BooleanType,
 )
 from sqlalchemy.orm import Session
 
@@ -39,6 +39,15 @@ SINGLE_ROW_SCHEMA = StructType([
     StructField("acteur_delai_moyen", FloatType(), False),
     StructField("tribunal_delai_moyen", FloatType(), False),
     StructField("procedure_taux_succes", FloatType(), False),
+    # V2 — Socio-économique
+    StructField("domiciliation_salaire", IntegerType(), True),
+    StructField("anciennete_client_annees", IntegerType(), True),
+    StructField("statut_matrimonial", StringType(), True),
+    StructField("personnes_a_charge", IntegerType(), True),
+    StructField("categorie_employeur", StringType(), True),
+    StructField("type_contrat", StringType(), True),
+    StructField("statut_logement", StringType(), True),
+    StructField("taux_endettement", FloatType(), True),
 ])
 
 STATUT_LABELS = {0: "Recouvré", 1: "En cours", 2: "Échec"}
@@ -63,7 +72,8 @@ class PredictionService:
         # Le client n'envoie plus le score de risque, on l'estime via une formule simple pour l'instant
         # Plus tard, un 6ème modèle ML pourrait s'en charger.
         computed_score_risque = min(100, max(1, (request.historique_incidents * 10) + int(request.montant_impaye / 1000)))
-        
+        computed_taux_endettement = float(request.montant_impaye / request.revenu_estime) if request.revenu_estime > 0 else 0.0
+
         # Initialisation à 0 car c'est un nouveau dossier
         computed_nombre_evenements = 0
         computed_nombre_retards = 0
@@ -89,6 +99,14 @@ class PredictionService:
             acteur_delai_moyen=0.0,
             tribunal_delai_moyen=0.0,
             procedure_taux_succes=0.0,
+            domiciliation_salaire=int(request.domiciliation_salaire),
+            anciennete_client_annees=request.anciennete_client_annees,
+            statut_matrimonial=request.statut_matrimonial,
+            personnes_a_charge=request.personnes_a_charge,
+            categorie_employeur=request.categorie_employeur,
+            type_contrat=request.type_contrat,
+            statut_logement=request.statut_logement,
+            taux_endettement=computed_taux_endettement,
         )
         df_base = spark.createDataFrame([row_base], schema=SINGLE_ROW_SCHEMA)
         
@@ -136,6 +154,14 @@ class PredictionService:
             acteur_delai_moyen=float(acteur_delai_moyen),
             tribunal_delai_moyen=float(tribunal_delai_moyen),
             procedure_taux_succes=float(procedure_taux_succes),
+            domiciliation_salaire=int(request.domiciliation_salaire),
+            anciennete_client_annees=request.anciennete_client_annees,
+            statut_matrimonial=request.statut_matrimonial,
+            personnes_a_charge=request.personnes_a_charge,
+            categorie_employeur=request.categorie_employeur,
+            type_contrat=request.type_contrat,
+            statut_logement=request.statut_logement,
+            taux_endettement=computed_taux_endettement,
         )
         df_full = spark.createDataFrame([row_full], schema=SINGLE_ROW_SCHEMA)
 
@@ -190,6 +216,14 @@ class PredictionService:
             delai_estime_jours=delai_predit,
             score_avocat=score_avocat,
             next_best_action=next_action,
+            domiciliation_salaire=int(request.domiciliation_salaire),
+            anciennete_client_annees=request.anciennete_client_annees,
+            statut_matrimonial=request.statut_matrimonial,
+            personnes_a_charge=request.personnes_a_charge,
+            categorie_employeur=request.categorie_employeur,
+            type_contrat=request.type_contrat,
+            statut_logement=request.statut_logement,
+            taux_endettement=computed_taux_endettement,
         )
 
         db.add(history_record)

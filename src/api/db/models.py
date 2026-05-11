@@ -45,6 +45,16 @@ class PredictionHistory(Base):
     score_avocat = Column(Float, nullable=False)
     next_best_action = Column(String, nullable=False)  # Recommendation IA
 
+    # Socio-économique (V2)
+    domiciliation_salaire = Column(Integer, nullable=True)   # 0/1
+    anciennete_client_annees = Column(Integer, nullable=True)
+    statut_matrimonial = Column(String, nullable=True)
+    personnes_a_charge = Column(Integer, nullable=True)
+    categorie_employeur = Column(String, nullable=True)
+    type_contrat = Column(String, nullable=True)
+    statut_logement = Column(String, nullable=True)
+    taux_endettement = Column(Float, nullable=True)
+
     # Outcome (Cibles réelles — remplies plus tard via feedback ou batch)
     montant_recouvre_final = Column(Float, nullable=True)
     delai_final_jours = Column(Integer, nullable=True)

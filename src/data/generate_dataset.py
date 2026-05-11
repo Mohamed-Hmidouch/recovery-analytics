@@ -86,6 +86,66 @@ class SyntheticDebtCollectionGenerator:
 
         return df
 
+    def _generate_socioeconomic_features(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Génère les 8 nouvelles variables socio-économiques V2."""
+        logger.info("Génération des features socio-économiques (V2)...")
+
+        n = self.num_records
+        # domiciliation_salaire : 60% True pour Etat/Fonctionnaire, 30% sinon
+        df['domiciliation_salaire'] = np.random.choice([1, 0], n, p=[0.45, 0.55])
+
+        # anciennete_client_annees : lognormal 0-30 ans
+        df['anciennete_client_annees'] = np.clip(
+            np.round(np.random.lognormal(1.5, 0.8, n)).astype(int), 0, 40
+        )
+
+        # statut_matrimonial
+        df['statut_matrimonial'] = np.random.choice(
+            ['Celibataire', 'Marie', 'Divorce', 'Veuf'], n,
+            p=[0.35, 0.45, 0.15, 0.05]
+        )
+
+        # personnes_a_charge : 0-6
+        df['personnes_a_charge'] = np.random.choice(
+            [0, 1, 2, 3, 4, 5, 6], n,
+            p=[0.25, 0.20, 0.25, 0.15, 0.08, 0.05, 0.02]
+        )
+
+        # categorie_employeur — corrélée au segment
+        categorie_map = {
+            'Retail': (['Etat', 'Prive', 'Independant', 'Sans_emploi'], [0.20, 0.50, 0.15, 0.15]),
+            'Professionnel': (['Etat', 'Prive', 'Independant', 'Sans_emploi'], [0.15, 0.40, 0.40, 0.05]),
+            'Corporate': (['Etat', 'Prive', 'Independant', 'Sans_emploi'], [0.10, 0.75, 0.14, 0.01]),
+        }
+        df['categorie_employeur'] = [
+            np.random.choice(categorie_map[seg][0], p=categorie_map[seg][1])
+            for seg in df['client_segment']
+        ]
+
+        # type_contrat — corrélé à categorie_employeur
+        contrat_choices = []
+        for emp in df['categorie_employeur']:
+            if emp == 'Etat':
+                contrat_choices.append(np.random.choice(['Fonctionnaire', 'CDI'], p=[0.80, 0.20]))
+            elif emp == 'Prive':
+                contrat_choices.append(np.random.choice(['CDI', 'CDD', 'Interim'], p=[0.60, 0.30, 0.10]))
+            elif emp == 'Independant':
+                contrat_choices.append(np.random.choice(['CDI', 'CDD', 'Sans_contrat'], p=[0.20, 0.30, 0.50]))
+            else:
+                contrat_choices.append('Sans_contrat')
+        df['type_contrat'] = contrat_choices
+
+        # statut_logement
+        df['statut_logement'] = np.random.choice(
+            ['Proprietaire', 'Locataire', 'Loge_gratuitement'], n,
+            p=[0.35, 0.55, 0.10]
+        )
+
+        # taux_endettement = montant_impaye / revenu_estime (déjà dans df)
+        df['taux_endettement'] = (df['montant_impaye'] / df['revenu_estime']).round(4)
+
+        return df
+
     def _generate_procedure_features(self, df: pd.DataFrame) -> pd.DataFrame:
         """Caractéristiques de la procédure et identifiants des acteurs."""
         logger.info("Génération des caractéristiques de la procédure...")
@@ -195,6 +255,7 @@ class SyntheticDebtCollectionGenerator:
 
         df = self._generate_base_features()
         df = self._generate_financial_and_debt_features(df)
+        df = self._generate_socioeconomic_features(df)
         df = self._generate_procedure_features(df)
         df = self._generate_performance_metrics(df)
         df = self._generate_target_variables(df)
