@@ -42,20 +42,32 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # -- Features de Base (Avant décision de la procédure) --
-BASE_CATEGORICAL_COLS = ["client_segment"]
+BASE_CATEGORICAL_COLS = [
+    "client_segment",
+    # V2 — Socio-économique
+    "statut_matrimonial", "categorie_employeur", "type_contrat", "statut_logement",
+]
 BASE_NUMERIC_COLS = [
-    "revenu_estime", "score_risque", "montant_impaye", 
-    "historique_incidents", "anciennete_impaye_jours", "nombre_echeances_impayees"
+    "revenu_estime", "score_risque", "montant_impaye",
+    "historique_incidents", "anciennete_impaye_jours", "nombre_echeances_impayees",
+    # V2
+    "anciennete_client_annees", "personnes_a_charge", "domiciliation_salaire", "taux_endettement",
 ]
 
 # -- Features Complètes (Inclus le type de procédure prédit et l'historique) --
-FULL_CATEGORICAL_COLS = ["client_segment", "type_procedure"]
+FULL_CATEGORICAL_COLS = [
+    "client_segment", "type_procedure",
+    # V2 — Socio-économique
+    "statut_matrimonial", "categorie_employeur", "type_contrat", "statut_logement",
+]
 FULL_NUMERIC_COLS = [
     "revenu_estime", "score_risque", "montant_impaye", "acteur_taux_succes",
     "score_avocat", "historique_incidents", "anciennete_impaye_jours",
     "nombre_echeances_impayees", "nombre_evenements", "nombre_retards",
     "derniere_action_age_jours", "acteur_delai_moyen", "tribunal_delai_moyen",
     "procedure_taux_succes",
+    # V2
+    "anciennete_client_annees", "personnes_a_charge", "domiciliation_salaire", "taux_endettement",
 ]
 
 
