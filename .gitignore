@@ -11,6 +11,7 @@ models/
 
 # Environment
 .env
+.env.prod
 .venv/
 
 # AI Instructions
