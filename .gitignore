@@ -17,6 +17,5 @@ models/
 # AI Instructions
 .AI_INSTRUCTIONS.md
 
-generate_report.py
 analyse_predictions.html
 analyse_predictions_smart_recovery.pdf

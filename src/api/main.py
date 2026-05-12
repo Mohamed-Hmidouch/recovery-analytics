@@ -19,6 +19,7 @@ from src.api.core.model_manager import model_manager
 from src.api.core.security import PayloadGuardMiddleware, limiter, rate_limit_exceeded_handler
 from src.api.core.exceptions import register_exception_handlers
 from src.api.controllers.prediction_controller import router as prediction_router
+from src.api.controllers.agent_controller import router as agent_router
 
 # Charger les variables d'environnement depuis le .env à la racine du projet
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -110,6 +111,7 @@ app.add_middleware(
 
 # -- Enregistrement des routeurs --
 app.include_router(prediction_router)
+app.include_router(agent_router)
 
 
 # -- Root endpoint (optionnel, pas protégé) --
