@@ -9,7 +9,6 @@ import sys
 import json
 import uuid
 import requests
-import re
 from datetime import date, timedelta
 from pathlib import Path
 from dotenv import load_dotenv
@@ -167,68 +166,7 @@ def dossier_card(num, badge_class, badge_label, payload, res):
     </div>"""
 
 
-# ── Agent IA Q&A section ──────────────────────────────────────────────────────
-_AGENT_QA_FILE = BASE_DIR / "agent_qa.json"
-_agent_qa_items = []
-if _AGENT_QA_FILE.exists():
-    with open(_AGENT_QA_FILE, encoding="utf-8") as _f:
-        _agent_qa_items = json.load(_f)
 
-def _md_to_html(text):
-    """Minimal markdown → HTML converter for agent answers."""
-    text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
-    text = re.sub(r'\n\n', '</p><p>', text)
-    text = re.sub(r'\n([0-9]+\. )', r'<br/>\1', text)
-    text = re.sub(r'\n([-•✅⚠️⚡🔑🎯💡📋📊🏆📈🔍💰📅🏛️🔨] )', r'<br/>\1', text)
-    text = re.sub(r'\n', '<br/>', text)
-    return f"<p>{text}</p>"
-
-def _tools_badge(tools):
-    colors = {"predict_dossier": "#3b82f6", "query_history": "#10b981", "get_segment_scoring": "#8b5cf6"}
-    labels = {"predict_dossier": "🤖 predict_dossier", "query_history": "📊 query_history", "get_segment_scoring": "🎯 get_segment_scoring"}
-    badges = ""
-    for t in tools:
-        c = colors.get(t, "#6b7280")
-        l = labels.get(t, t)
-        badges += f'<span style="background:{c};color:white;border-radius:4px;padding:2px 8px;font-size:8pt;margin-right:4px;">{l}</span>'
-    return badges
-
-_agent_cards_html = ""
-for _i, _qa in enumerate(_agent_qa_items, 1):
-    _tools_html = _tools_badge(_qa.get("tools_used", []))
-    _answer_html = _md_to_html(_qa["answer"])
-    _agent_cards_html += f"""
-    <div style="margin-bottom:24px; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.10); page-break-inside:avoid;">
-      <div style="background:#1e3a5f; color:white; padding:10px 16px; font-size:9pt; font-weight:600;">
-        ❓ Question {_i} — Banquier
-      </div>
-      <div style="background:#eff6ff; padding:12px 16px; font-size:9.5pt; color:#1e3a5f; font-style:italic; border-bottom:1px solid #dbeafe;">
-        « {_qa['question']} »
-      </div>
-      <div style="background:white; padding:4px 16px 4px 16px; border-bottom:1px solid #f1f5f9;">
-        <span style="font-size:7.5pt; color:#64748b;">Tools utilisés : </span>{_tools_html}
-      </div>
-      <div style="background:#f8fafc; padding:12px 16px; font-size:9pt; color:#1e293b; line-height:1.6;">
-        <span style="color:#10b981; font-weight:700;">💬 Agent SmartRecovery :</span><br/>
-        {_answer_html}
-      </div>
-    </div>"""
-
-if not _agent_cards_html:
-    _agent_cards_html = "<p style='color:#6b7280;font-style:italic;'>Aucune session agent disponible.</p>"
-
-_agent_section_html = f"""
-<div style="page-break-before:always; margin-top:10px;">
-  <div style="background:linear-gradient(135deg,#1e3a5f,#3b82f6); color:white; border-radius:10px; padding:18px 24px; margin-bottom:24px;">
-    <div style="font-size:15pt; font-weight:700; margin-bottom:4px;">🤖 Agent IA SmartRecovery — Démonstration Gemini + LangChain</div>
-    <div style="font-size:9pt; opacity:0.85;">5 Questions Métier Réelles · Powered by Google Gemini 2.5 Flash · LangChain ReAct Agent · 3 Tools PySpark ML</div>
-  </div>
-  <div style="background:#fef9c3; border-left:4px solid #f59e0b; border-radius:6px; padding:10px 16px; margin-bottom:20px; font-size:8.5pt; color:#78350f;">
-    <strong>Architecture :</strong> Questions en langage naturel → <strong>Gemini 2.5 Flash</strong> (raisonnement) → <strong>LangChain ReAct</strong> (orchestration) → Tools PySpark ML (<em>predict_dossier, query_history, get_segment_scoring</em>) → Réponse structurée en français
-  </div>
-  {_agent_cards_html}
-</div>"""
-# ─────────────────────────────────────────────────────────────────────────────
 
 
 html_content = f"""<!DOCTYPE html>
@@ -484,8 +422,6 @@ X-API-Key: &lt;SECRET_API_KEY&gt;
 <div class="footer">
     Smart Recovery ML API v1.0.0 — Pipeline PySpark · 5 Modeles RandomForest / KMeans · FastAPI · PostgreSQL
 </div>
-
-{_agent_section_html}
 
 </body>
 </html>"""
