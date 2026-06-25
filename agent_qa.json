@@ -1,0 +1,96 @@
+[
+  {
+    "key": "Q1",
+    "question": "Mon client Corporate a 45 000 MAD impayés depuis 8 mois, 3 incidents de paiement, CDI privé, marié 2 enfants, revenu 80 000 MAD, 8 échéances impayées. Quelle procédure recommandes-tu et quelle est la probabilité de récupérer la créance ?",
+    "answer": "Sur la base de l'analyse de votre dossier Corporate, voici mon évaluation :\n\n **Prédiction du modèle :**\n- **Procédure recommandée : Judiciaire** (score de confiance : 87%)\n- **Probabilité de recouvrement : 78%** sur les 45 000 MAD\n- **Durée estimée : 180 jours** (procédure judiciaire standard)\n- **Prochaine action : Mise en demeure** dans les 15 prochains jours\n\n **Justification :**\nAvec 8 mois d'impayés, 3 incidents antérieurs et 8 échéances en défaut, le profil de risque est élevé. Malgré un revenu confortable (80 000 MAD/mois) et un CDI dans le privé, l'historique de paiement défaillant oriente clairement vers une procédure judiciaire. Le segment Corporate affiche historiquement un taux de recouvrement judiciaire de 74%.\n\n **Recommandation opérationnelle :**\n1. Envoyer une mise en demeure formelle sous 15 jours\n2. Mandater un huissier si pas de réponse sous 30 jours\n3. Initier la procédure judiciaire au tribunal de commerce\n\nLe taux d'endettement estimé à 56% renforce la nécessité d'agir rapidement avant détérioration de la situation.",
+    "tools_used": [
+      "predict_dossier"
+    ],
+    "language": "fr"
+  },
+  {
+    "key": "Q2",
+    "question": "J'ai deux dossiers similaires (30 000 MAD, 120 jours) : un client Retail CDI privé locataire avec 2 incidents, et un client Professionnel indépendant propriétaire avec 1 incident. Lequel a la meilleure probabilité de recouvrement et quelle procédure pour chacun ?",
+    "answer": "Analyse comparative des deux profils :\n\n **Profil A  Retail CDI privé locataire, 2 incidents :**\n- **Procédure recommandée : Judiciaire** (2 incidents + 120 jours = seuil dépassé)\n- **Probabilité de recouvrement : 63%** sur les 30 000 MAD\n- **Durée estimée : 125 jours**\n- **Prochaine action : Mise en demeure** immédiate\n\n **Profil B  Professionnel indépendant propriétaire, 1 incident :**\n- **Procédure recommandée : Judiciaire** (120 jours > seuil critique)\n- **Probabilité de recouvrement : 71%** sur les 30 000 MAD\n- **Durée estimée : 140 jours**\n- **Prochaine action : Assignation en justice** via avocat\n\n **Comparaison :**\n- Le profil Professionnel propriétaire (71%) est **8 points au-dessus** du Retail locataire (63%)\n- La propriété immobilière du client B constitue un actif saisissable  levier majeur\n- Malgré un seul incident, le Professionnel indépendant présente un risque de revenus variables\n\n **Recommandation :**\n- **Profil A** : Judiciaire standard avec huissier spécialisé Retail\n- **Profil B** : Judiciaire avec évaluation du bien immobilier en parallèle  le score huissier Professionnel est de 72/100, excellent pour ce type de dossier",
+    "tools_used": [
+      "predict_dossier"
+    ],
+    "language": "fr"
+  },
+  {
+    "key": "Q3",
+    "question": "Dossier urgent : client Professionnel, travailleur indépendant, locataire, 120 000 MAD impayés depuis 200 jours, 10 échéances, revenu 45 000 MAD, 1 incident. Durée de procédure et première action ?",
+    "answer": "Analyse du dossier urgent Professionnel :\n\n **Prédiction du modèle :**\n- **Procédure recommandée : Judiciaire** (200 jours dépassent le seuil critique de 150 jours)\n- **Probabilité de recouvrement : 71%** sur les 120 000 MAD\n- **Durée estimée de la procédure : 150 jours**\n- **Première action : Assignation en justice**  à initier immédiatement\n\n️ **Facteurs de risque identifiés :**\n- Travailleur indépendant  revenus variables, moins de garanties salariales\n- Locataire  pas de bien immobilier à saisir\n- 200 jours d'impayés  dossier déjà en zone critique\n- 10 échéances = engagement financier important\n\n **Plan d'action recommandé :**\n1. **Immédiat (J+0)** : Assignation en justice via avocat partenaire\n2. **J+15** : Demande de saisie-arrêt sur comptes bancaires\n3. **J+30** : Désignation d'un huissier pour évaluation patrimoine\n4. **J+90** : Audience tribunal  prévoir dossier complet\n\n Le score huissier pour le segment Professionnel est de 72/100  vos prestataires sont efficaces sur ce profil. Agissez maintenant, chaque semaine de retard diminue de 2% la probabilité de recouvrement.",
+    "tools_used": [
+      "predict_dossier",
+      "get_segment_scoring"
+    ],
+    "language": "fr"
+  },
+  {
+    "key": "Q4",
+    "question": "Client Retail, salaire domicilié, fonctionnaire État, propriétaire, 6 échéances impayées depuis 300 jours, 15 000 MAD, revenu 12 000 MAD, 2 incidents. Je négocie encore ou judiciaire direct ?",
+    "answer": "Analyse de ce profil Retail atypique :\n\n **Prédiction du modèle :**\n- **Procédure recommandée : Judiciaire**\n- **Probabilité de recouvrement : 82%**  l'une des plus élevées du portefeuille\n- **Première action : Assignation en justice**\n\n **Ma recommandation : Judiciaire direct, mais avec une approche ciblée**\n\nMalgré les 300 jours d'impayés qui suggèrent la voie judiciaire, ce profil a des **atouts exceptionnels** :\n-  Fonctionnaire État = revenu garanti et saisissable à la source\n-  Salaire domicilié = visibilité totale sur les flux\n-  Propriétaire = actif immobilier saisissable\n-  Montant faible (15 000 MAD) = procédure rapide\n\n **Stratégie optimale :**\n1. Ne pas négocier davantage (300 jours de tentatives = profil non-coopératif)\n2. Initier une **saisie sur salaire via voie judiciaire rapide** (procédure injonction de payer)\n3. Le statut fonctionnaire garantit un recouvrement dans 60-90 jours\n\nTaux d'endettement estimé à 62.5% (15 000 / 12 000 × 50%)  la saisie partielle sur salaire est légalement possible et efficace. Le modèle prédit 82% de succès : c'est l'un de vos meilleurs dossiers de recouvrement.",
+    "tools_used": [
+      "predict_dossier"
+    ],
+    "language": "fr"
+  },
+  {
+    "key": "Q5",
+    "question": "Donne-moi le scoring complet des avocats et huissiers pour le segment Retail sur les dossiers judiciaires  performent-ils bien ?",
+    "answer": "Voici le scoring complet de vos prestataires Retail - Judiciaire :\n\n **Scoring Segment Retail / Procédure Judiciaire :**\n\n| Indicateur | Score | Évaluation |\n|-----------|-------|------------|\n| ️ Score Avocat | **59 / 100** | ️ Correct, à améliorer |\n|  Score Huissier | **65 / 100** |  Correct |\n|  Taux succès procédure | **75%** |  Bon |\n|  Délai moyen | **120 jours** | ️ Standard |\n|  Taux succès segment | **65%** | ️ Perfectible |\n\n **Analyse :**\n- Les huissiers (65/100) surpassent les avocats (59/100) sur le Retail\n- Le score avocat est en dessous de la moyenne du portefeuille (67/100 tous segments)\n- Le délai de 120 jours est dans la norme, mais le Corporate fait mieux (90 jours)\n\n�� **Recommandations :**\n1. **Renouveler les critères de sélection avocats** pour le segment Retail  cibler des profils spécialisés en droit de la consommation\n2. **Les huissiers sont efficaces**  maintenir les partenariats en place\n3. Envisager une **procédure simplifiée** (injonction de payer) pour les montants < 20 000 MAD, plus rapide et moins coûteuse\n4. Un score avocat > 70 permettrait d'améliorer le taux de succès segment de 65% à ~72%",
+    "tools_used": [
+      "get_segment_scoring"
+    ],
+    "language": "fr"
+  },
+  {
+    "key": "Q6",
+    "question": "Client Retail sans emploi, locataire, 22 000 MAD impayés depuis 180 jours, 7 échéances, 0 incident, revenu 0 MAD. Quelle procédure préconise le modèle et quelle est la probabilité réelle de recouvrement ?",
+    "answer": "Analyse du profil Retail précaire  sans emploi, revenu zéro :\n\n�� **Prédiction du modèle :**\n- **Procédure recommandée : Amiable** (malgré 180 jours, le revenu nul rend le judiciaire contre-productif)\n- **Probabilité de recouvrement : 38%** sur les 22 000 MAD\n- **Durée estimée : 210 jours**\n- **Prochaine action : Relance amiable** avec proposition d'échelonnement\n\n️ **Facteurs de risque critiques :**\n- Revenu 0 MAD  aucune saisie sur salaire possible\n- Locataire  pas d'actif immobilier saisissable\n- 0 incident antérieur  première défaillance, profil potentiellement coopératif\n- 180 jours  long mais pas encore en zone de perte totale\n\n **Stratégie recommandée par le modèle :**\n1. **Relance amiable prioritaire** : proposer un plan de remboursement sur 24-36 mois (montant < 1 000 MAD/mois)\n2. **Ne pas engager de procédure judiciaire** : coût de la procédure (3 000-5 000 MAD) représente 14-22% de la créance\n3. **Vérifier les allocations sociales** : une saisie sur prestations est légalement limitée mais possible\n4. **Délai de décision** : si aucun accord sous 60 jours  réévaluer avec le modèle\n\n Avec 0 incident antérieur, ce client a un profil de *primo-défaillant*  62% de ces profils acceptent un plan amiable si proposé avant 210 jours. Le score de risque du modèle est modéré mais la probabilité de 38% reflète l'absence totale de levier de saisie.",
+    "tools_used": [
+      "predict_dossier"
+    ],
+    "language": "fr"
+  },
+  {
+    "key": "Q7",
+    "question": "Profil Corporate risqué : CDI privé, marié 3 enfants, propriétaire, revenu 120 000 MAD, 95 000 MAD impayés depuis 250 jours, 12 échéances, 4 incidents. Donne-moi la prédiction complète ET le scoring avocat/huissier Corporate.",
+    "answer": "Analyse complète du dossier Corporate critique :\n\n **Prédiction du modèle ML :**\n- **Procédure recommandée : Judiciaire** (score de confiance : 94%)\n- **Probabilité de recouvrement : 81%** sur les 95 000 MAD\n- **Durée estimée : 195 jours**\n- **Prochaine action : Assignation en justice**  urgente\n- **Cluster KMeans : Segment 2** (profil Corporate haut risque à fort potentiel)\n\n️ **Analyse du profil :**\n- 4 incidents  récidiviste confirmé, aucune négociation amiable n'a fonctionné\n- 250 jours  dossier en zone critique avancée\n- 12 échéances en défaut  engagement total non honoré\n- **Atouts** : propriétaire (bien saisissable) + CDI privé (salaire saisissable) + revenu 120 000 MAD\n\n️ **Scoring Avocat/Huissier Corporate :**\n\n| Acteur | Score | Taux succès | Délai moyen |\n|--------|-------|-------------|-------------|\n| Avocat Corporate | **71 / 100** | 74% | 148 jours |\n| Huissier Corporate | **68 / 100** | 69% | 135 jours |\n\n **Recommandation d'acteur :**\n- **Mandater un avocat Corporate en priorité** (score 71 > 68, taux succès 74%)\n- Le montant élevé (95 000 MAD) justifie les honoraires avocat (ROI positif)\n- En parallèle : huissier pour évaluation immédiate du patrimoine immobilier\n\n **Plan d'action 72h :**\n1. Assignation tribunal de commerce via avocat partenaire score > 75\n2. Demande de saisie conservatoire sur le bien immobilier\n3. Saisie-arrêt bancaire préventive",
+    "tools_used": [
+      "predict_dossier",
+      "get_segment_scoring"
+    ],
+    "language": "fr"
+  },
+  {
+    "key": "Q8",
+    "question": "3andi client Corporate, 60,000 MAD ma3ando ypay depuis 10 chhor, 5 incidents, CDI privé, revenu 90,000 MAD. Chno t9der t9oul liya  judiciaire wella amiable ? Wach kayn chance nrjou l flous ?",
+    "answer": "Wach 3ando dossier khطir  voici mon analyse complète :\n\n **Prédiction des modèles ML :**\n- **Procédure recommandée : Judiciaire**  (confiance : 91%)\n- **Probabilité de recouvrement : 76%** sur les 60 000 MAD\n- **Durée estimée : 165 jours**  environ 5 à 6 mois\n- **Prochaine action : Mise en demeure formelle**  à envoyer dans les 10 jours\n\n **Chno gal le modèle et pourquoi :**\n- 10 chhor (300 jours) d'impayés  seuil judiciaire largement dépassé (> 150 jours)\n- 5 incidents antérieurs  profil récidiviste, l'amiable n'a aucune chance\n- CDI privé + revenu 90 000 MAD  **levier de saisie sur salaire très fort** (max 1/3 saisissable  30 000 MAD/mois)\n- Segment Corporate  score avocat 71/100, taux judiciaire historique **74%**\n\n️ **Scoring acteurs Corporate :**\n- Avocat : **71/100**  taux succès 74%, délai 148 jours\n- Huissier : **68/100**  taux succès 69%, délai 135 jours\n\n **Plan d'action (3 étapes) :**\n1. **J+0 à J+10** : Mise en demeure + rappel formel avocat partenaire\n2. **J+30** : Assignation tribunal de commerce si pas de réponse\n3. **J+90** : Saisie-arrêt sur salaire via huissier (levier le plus efficace sur CDI)\n\n **Résumé** : Ghir judiciaire  l'amiable avec 5 incidents et 10 mois de retard c'est du temps perdu. Le modèle prédit 76% de récupération. La saisie sur salaire CDI privé est votre meilleure arme  nrjou 60,000 MAD f 5-6 chhor.",
+    "tools_used": [
+      "predict_dossier",
+      "get_segment_scoring"
+    ],
+    "language": "darija"
+  },
+  {
+    "key": "Q9",
+    "question": "3andi client Retail, 200 jour ma3ando ypay, 18,000 MAD, fonctionnaire Etat, mra o joj wlad, domiciliation salaire, 1 incident. Wakha tatla3 l procédure judiciaire, kifach ndir  saisie wella injonction de payer ?",
+    "answer": "Profil Retail fonctionnaire  analyse et stratégie judiciaire :\n\n **Prédiction du modèle :**\n- **Procédure recommandée : Judiciaire** (200 jours > seuil de 150 jours)\n- **Probabilité de recouvrement : 84%**  excellent score pour ce profil\n- **Durée estimée : 75 jours**  très rapide grâce au statut fonctionnaire\n- **Action recommandée : Injonction de payer** (procédure simplifiée)\n\n **Réponse directe : Injonction de payer est LA meilleure option**\n\n**Pourquoi injonction de payer plutôt que saisie directe :**\n-  **18 000 MAD**  éligible procédure simplifiée (< 20 000 MAD)\n-  **1 seul incident**  profil peu contentieux, régularisation spontanée probable après ordonnance\n-  **2 à 3 fois moins coûteuse** qu'une saisie complète\n-  **60-75 jours** vs 120-150 jours pour saisie classique\n\n**La saisie reste option de secours garantie :**\n- Fonctionnaire État + salaire domicilié = saisie **garantie à 100%** si refus d'exécution\n- Saisir 1/3 salaire État  récupération totale en 2-3 mensualités\n\n **Processus recommandé :**\n1. Requête injonction de payer au tribunal  ordonnance sous 15-30 jours\n2. Signification par huissier  délai opposition 30 jours\n3. Si pas d'opposition  saisie salaire automatique (100% de succès)\n\n 84% de succès prédit. Avec fonctionnaire + domiciliation salaire, nrjou 18,000 MAD f 75 jours  c'est quasi certain.",
+    "tools_used": [
+      "predict_dossier"
+    ],
+    "language": "darija"
+  },
+  {
+    "key": "Q10",
+    "question": "Compare le scoring avocat et huissier pour les segments Retail et Corporate. Simule ensuite un dossier Corporate typique (revenu 75 000 MAD, 55 000 MAD impayés, 210 jours, 3 incidents, CDI privé) et dis-moi quel acteur mandater en priorité.",
+    "answer": "Comparatif scoring acteurs + simulation dossier Corporate :\n\n **Scoring Avocat vs Huissier par segment :**\n\n| Segment | Score Avocat | Score Huissier | Meilleur acteur |\n|---------|-------------|---------------|----------------|\n| **Retail** | 59 / 100 | 65 / 100 |  Huissier |\n| **Corporate** | 71 / 100 | 68 / 100 | ️ Avocat |\n| **Professionnel** | 64 / 100 | 72 / 100 |  Huissier |\n\n **Simulation dossier Corporate typique :**\n- Revenu 75 000 MAD / Montant 55 000 MAD / 210 jours / 3 incidents / CDI privé\n- **Procédure recommandée : Judiciaire** (confiance 89%)\n- **Probabilité de recouvrement : 77%** sur les 55 000 MAD\n- **Durée estimée : 170 jours**\n- **Prochaine action : Assignation en justice**\n- **Cluster : Segment 2** (Corporate haut risque à potentiel fort)\n\n **Acteur à mandater en priorité : Avocat Corporate (score 71/100)**\n\n**Justification :**\n- Montant 55 000 MAD  honoraires avocat (~7 000 MAD) absorbés par le gain espéré (55K × 77% = 42 350 MAD net)\n- Taux succès avocat Corporate 74% > huissier 69% sur ce segment\n- 3 incidents + 210 jours  dossier complexe qui nécessite l'expertise judiciaire d'un avocat\n\n **Stratégie combinée :**\n1. **Avocat** : assignation tribunal de commerce  audience sous 90 jours\n2. **Huissier** en appui : saisie conservatoire immobilière et bancaire\n3. Si résistance après jugement : saisie salaire CDI privé (1/3 = 25 000 MAD/mois saisissable)",
+    "tools_used": [
+      "predict_dossier",
+      "get_segment_scoring"
+    ],
+    "language": "fr"
+  }
+]

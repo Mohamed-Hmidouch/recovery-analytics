@@ -11,3 +11,6 @@ pandas==2.3.3
 numpy==2.0.2
 faker==33.1.0
 reportlab==4.4.1
+langchain==0.3.30
+langchain-google-genai==2.1.12
+langchain-core==0.3.86
